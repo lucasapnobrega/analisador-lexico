@@ -27,7 +27,6 @@ class Scanner:
 
     def next_token(self):
         content = ""
-        state = 0
 
         while True:
             if self.is_eof():
@@ -79,7 +78,6 @@ class Scanner:
             # Expressão regular: ((0-9)*.)?(0-9)+
             if self.is_digit(current_char) or (current_char == "." and self.is_digit(self.peek_char())):
                 content = current_char
-                has_dot = current_char == "."
                 
                 # Se começou com dígito, pode ter mais dígitos
                 if self.is_digit(current_char):
@@ -154,9 +152,14 @@ class Scanner:
                 else:
                     self.error("Operador '&' inválido, esperava '&&'")
 
+            if current_char == "|":
+                if self.peek_char() == "|":
+                    self.next_char()
+                    return Token(TokenType.LOG_OPERATOR, "||", self.line, self.col)
+                else:
+                    self.error("Operador '|' inválido, esperava '||'")
+
             # Erro Léxico
-            error_line = self.line
-            error_col = self.col - 1  # Ajusta para mostrar a posição correta
             self.error(f"Caractere inválido: '{current_char}'")
 
     # Funções Auxiliares
