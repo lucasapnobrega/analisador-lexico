@@ -76,18 +76,26 @@ class Scanner:
                 return Token(TokenType.IDENTIFIER, content, self.line, self.col)
 
             # Números com ou sem ponto decimal
+            # Expressão regular: ((0-9)*.)?(0-9)+
             if self.is_digit(current_char) or (current_char == "." and self.is_digit(self.peek_char())):
                 content = current_char
                 has_dot = current_char == "."
-                while self.is_digit(self.peek_char()) or (self.peek_char() == "." and not has_dot):
-                    c = self.next_char()
-                    if c == ".":
-                        has_dot = True
-                    content += c
-
-                # Casos inválidos: número terminado com "."
-                if content.endswith("."):
-                    self.error(f"Número inválido: {content}")
+                
+                # Se começou com dígito, pode ter mais dígitos
+                if self.is_digit(current_char):
+                    while self.is_digit(self.peek_char()):
+                        content += self.next_char()
+                    
+                    # Pode ter um ponto seguido de dígitos
+                    if self.peek_char() == "." and self.is_digit_at_position(self.pos + 1):
+                        content += self.next_char()  # adiciona o ponto
+                        while self.is_digit(self.peek_char()):
+                            content += self.next_char()
+                
+                # Se começou com ponto, deve ter pelo menos um dígito após
+                else:  # começou com "."
+                    while self.is_digit(self.peek_char()):
+                        content += self.next_char()
                 
                 return Token(TokenType.NUMBER, content, self.line, self.col)
 
@@ -128,7 +136,27 @@ class Scanner:
             if current_char == ")":
                 return Token(TokenType.RPAREN, ")", self.line, self.col)
 
+            # Ponto e vírgula
+            if current_char == ";":
+                return Token(TokenType.SEMICOLON, ";", self.line, self.col)
+
+            # Chaves
+            if current_char == "{":
+                return Token(TokenType.LBRACE, "{", self.line, self.col)
+            if current_char == "}":
+                return Token(TokenType.RBRACE, "}", self.line, self.col)
+
+            # Operadores lógicos
+            if current_char == "&":
+                if self.peek_char() == "&":
+                    self.next_char()
+                    return Token(TokenType.LOG_OPERATOR, "&&", self.line, self.col)
+                else:
+                    self.error("Operador '&' inválido, esperava '&&'")
+
             # Erro Léxico
+            error_line = self.line
+            error_col = self.col - 1  # Ajusta para mostrar a posição correta
             self.error(f"Caractere inválido: '{current_char}'")
 
     # Funções Auxiliares
@@ -151,6 +179,11 @@ class Scanner:
 
     def is_eof(self) -> bool:
         return self.pos >= len(self.source_code)
+
+    def is_digit_at_position(self, pos: int) -> bool:
+        if pos >= len(self.source_code):
+            return False
+        return self.source_code[pos].isdigit()
 
     def error(self, message: str):
         raise Exception(f"Erro léxico (linha {self.line}, coluna {self.col}): {message}")

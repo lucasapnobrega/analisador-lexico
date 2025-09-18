@@ -8,6 +8,10 @@ class TokenType(Enum):
     ASSIGNMENT = "ASSIGNMENT"
     LPAREN = "LPAREN"
     RPAREN = "RPAREN"
+    SEMICOLON = "SEMICOLON"
+    LBRACE = "LBRACE"
+    RBRACE = "RBRACE"
+    LOG_OPERATOR = "LOG_OPERATOR"
 
     # Palavras Reservadas
     INT = "INT"
