@@ -1,7 +1,6 @@
 from util.token_type import TokenType
 from lexical.token import Token
 
-# Scanner responsável por analisar caractere por caractere do código-fonte (programa.mc) e retornar os tokens reconhecidos.
 class Scanner:
     def __init__(self, filename: str):
         try:
@@ -10,7 +9,7 @@ class Scanner:
             self.source_code = list(content)
             self.pos = 0
             self.line = 1 
-            self.col = 1
+            self.col = 0
         except Exception as e:
             print("Erro ao abrir arquivo:", e)
             self.source_code = []
@@ -18,29 +17,36 @@ class Scanner:
 
         # Tabela de palavras reservadas
         self.reserved_words = {
-            "int": TokenType.INT,
-            "float": TokenType.FLOAT,
-            "print": TokenType.PRINT,
-            "if": TokenType.IF,
-            "else": TokenType.ELSE,
+            "DECLARACOES": TokenType.DECLARACOES,
+            "ALGORITMO": TokenType.ALGORITMO,
+            "INTEIRO": TokenType.INTEIRO,
+            "REAL": TokenType.REAL,
+            "LER": TokenType.LER,
+            "IMPRIMIR": TokenType.IMPRIMIR,
+            "SE": TokenType.SE,
+            "ENTAO": TokenType.ENTAO,
+            "SENAO": TokenType.SENAO,
+            "ENQUANTO": TokenType.ENQUANTO,
+            "INICIO": TokenType.INICIO,
+            "FIM": TokenType.FIM,
+            "E": TokenType.E,
+            "OU": TokenType.OU
         }
 
     def next_token(self):
         content = ""
-        state = 0
-
         while True:
             if self.is_eof():
                 return None
 
             current_char = self.next_char()
 
-            # Ignora espaços, tab e quebra de linha
+            # Ignora espaços, tab
             if current_char in [' ', '\t', '\r']:
                 continue
             if current_char == '\n':
                 self.line += 1
-                self.col = 1
+                self.col = 0
                 continue
 
             # Comentário de linha única: #
@@ -54,15 +60,27 @@ class Scanner:
                 self.next_char()
                 while not self.is_eof():
                     c = self.next_char()
-
                     if c == "\n":
                         self.line += 1
-                        self.col = 1
-
+                        self.col = 0
                     if c == "*" and self.peek_char() == "/":
                         self.next_char()
                         break
                 continue
+
+            # String entre aspas duplas
+            if current_char == '"' or current_char == "'":
+                quote = current_char
+                content = ""
+                while not self.is_eof():
+                    c = self.next_char()
+                    if c == quote:
+                        return Token(TokenType.STRING, content, self.line, self.col)
+                    if c == "\n":
+                        self.line += 1
+                        self.col = 0
+                    content += c
+                self.error("String não finalizada")
 
             # Identificadores E Palavras Reservadas
             if self.is_letter(current_char) or current_char == "_":
@@ -70,9 +88,9 @@ class Scanner:
                 while self.is_letter(self.peek_char()) or self.is_digit(self.peek_char()) or self.peek_char() == "_":
                     content += self.next_char()
 
-                # Se for palavra reservada, retorna o tipo
-                if content in self.reserved_words:
-                    return Token(self.reserved_words[content], content, self.line, self.col)
+                content_upper = content.upper()
+                if content_upper in self.reserved_words:
+                    return Token(self.reserved_words[content_upper], content_upper, self.line, self.col)
                 return Token(TokenType.IDENTIFIER, content, self.line, self.col)
 
             # Números com ou sem ponto decimal
@@ -85,17 +103,15 @@ class Scanner:
                         has_dot = True
                     content += c
 
-                # Casos inválidos: número terminado com "."
                 if content.endswith("."):
                     self.error(f"Número inválido: {content}")
-                
                 return Token(TokenType.NUMBER, content, self.line, self.col)
 
             # Operadores Matemáticos
             if current_char in ['+', '-', '*', '/']:
                 return Token(TokenType.MATH_OPERATOR, current_char, self.line, self.col)
 
-            # Operadores de Atribuição
+            # Operadores de Atribuição / Igualdade
             if current_char == "=":
                 if self.peek_char() == "=":
                     self.next_char()
@@ -128,17 +144,27 @@ class Scanner:
             if current_char == ")":
                 return Token(TokenType.RPAREN, ")", self.line, self.col)
 
+            # Dois-pontos
+            if current_char == ":":
+                return Token(TokenType.COLON, ":", self.line, self.col)
+
             # Erro Léxico
             self.error(f"Caractere inválido: '{current_char}'")
 
     # Funções Auxiliares
     def is_letter(self, c: str) -> bool:
+        if c == "\0":
+            return False
         return c.isalpha()
 
     def is_digit(self, c: str) -> bool:
+        if c == "\0":
+            return False
         return c.isdigit()
 
     def next_char(self) -> str:
+        if self.is_eof():
+            return "\0"
         ch = self.source_code[self.pos]
         self.pos += 1
         self.col += 1
