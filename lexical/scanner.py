@@ -94,6 +94,7 @@ class Scanner:
                 return Token(TokenType.IDENTIFIER, content, self.line, self.col)
 
             # Números com ou sem ponto decimal
+            # Expressão regular: ((0-9)*.)?(0-9)+
             if self.is_digit(current_char) or (current_char == "." and self.is_digit(self.peek_char())):
                 content = current_char
                 has_dot = current_char == "."
@@ -147,6 +148,30 @@ class Scanner:
             # Dois-pontos
             if current_char == ":":
                 return Token(TokenType.COLON, ":", self.line, self.col)
+            # Ponto e vírgula
+            if current_char == ";":
+                return Token(TokenType.SEMICOLON, ";", self.line, self.col)
+
+            # Chaves
+            if current_char == "{":
+                return Token(TokenType.LBRACE, "{", self.line, self.col)
+            if current_char == "}":
+                return Token(TokenType.RBRACE, "}", self.line, self.col)
+
+            # Operadores lógicos
+            if current_char == "&":
+                if self.peek_char() == "&":
+                    self.next_char()
+                    return Token(TokenType.LOG_OPERATOR, "&&", self.line, self.col)
+                else:
+                    self.error("Operador '&' inválido, esperava '&&'")
+
+            if current_char == "|":
+                if self.peek_char() == "|":
+                    self.next_char()
+                    return Token(TokenType.LOG_OPERATOR, "||", self.line, self.col)
+                else:
+                    self.error("Operador '|' inválido, esperava '||'")
 
             # Erro Léxico
             self.error(f"Caractere inválido: '{current_char}'")

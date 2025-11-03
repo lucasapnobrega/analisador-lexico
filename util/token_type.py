@@ -10,6 +10,10 @@ class TokenType(Enum):
     RPAREN = "RPAREN"
     COLON = "COLON"
     STRING = "STRING"
+    SEMICOLON = "SEMICOLON"
+    LBRACE = "LBRACE"
+    RBRACE = "RBRACE"
+    LOG_OPERATOR = "LOG_OPERATOR"
 
     # Palavras reservadas
     DECLARACOES = "DECLARACOES"
