@@ -36,18 +36,18 @@ class Parser:
 
     # ':' 'DECLARACOES' listaDeclaracoes ':' 'ALGORITMO' listaComandos
     def parse_program(self):
-      self.log("Iniciando análise de programa")
-      self._match(TokenType.COLON)
-      self._match(TokenType.DECLARACOES)
-      self.listaDeclaracoes()
-      self._match(TokenType.COLON)
-      self._match(TokenType.ALGORITMO)
-      self.listaComandos()
+        self.log("Iniciando análise de programa")
+        self._match(TokenType.COLON)
+        self._match(TokenType.DECLARACOES)
+        self.listaDeclaracoes()
+        self._match(TokenType.COLON)
+        self._match(TokenType.ALGORITMO)
+        self.listaComandos()
 
-      if self.lookahead.type != TokenType.EOF:
-          self.error("Conteúdo extra após o fim do programa")
+        if self.lookahead.type != TokenType.EOF:
+            self.error("Conteúdo extra após o fim do programa")
     
-      self.log("Programa reconhecido com sucesso.")
+        self.log("Programa reconhecido com sucesso.")
 
     # listaDeclaracoes : declaracao listaDeclaracoes | declaracao;
     def listaDeclaracoes(self):
@@ -58,15 +58,15 @@ class Parser:
 
     # declaracao : VARIAVEL ':' tipoVar;
     def declaracao(self):
-      self.log("Reconhecendo declaracao")
+        self.log("Reconhecendo declaracao")
 
-      ident = self._match(TokenType.IDENTIFIER)
-      self._match(TokenType.COLON)
+        ident = self._match(TokenType.IDENTIFIER)
+        self._match(TokenType.COLON)
 
-      tipo = self.lookahead.text
-      self.tipoVar()
+        tipo = self.lookahead.text
+        self.tipoVar()
 
-      self.log(f"Variável declarada: {ident.text} : {tipo}")
+        self.log(f"Variável declarada: {ident.text} : {tipo}")
 
     def tipoVar(self):
         if self.lookahead.type == TokenType.INTEIRO:
@@ -150,7 +150,6 @@ class Parser:
             self.listaComandos()
         
         self._match(TokenType.FIM)
-
 
     # expressaoAritmetica -> termoAritmetico ((+|-) termoAritmetico)
     def expressaoAritmetica(self):

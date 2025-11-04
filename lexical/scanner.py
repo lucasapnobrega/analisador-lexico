@@ -94,7 +94,6 @@ class Scanner:
                 return Token(TokenType.IDENTIFIER, content, self.line, self.col)
 
             # Números com ou sem ponto decimal
-            # Expressão regular: ((0-9)*.)?(0-9)+
             if self.is_digit(current_char) or (current_char == "." and self.is_digit(self.peek_char())):
                 content = current_char
                 has_dot = current_char == "."
@@ -180,11 +179,13 @@ class Scanner:
     def is_letter(self, c: str) -> bool:
         if c == "\0":
             return False
+            
         return c.isalpha()
 
     def is_digit(self, c: str) -> bool:
         if c == "\0":
             return False
+
         return c.isdigit()
 
     def next_char(self) -> str:
@@ -193,11 +194,13 @@ class Scanner:
         ch = self.source_code[self.pos]
         self.pos += 1
         self.col += 1
+
         return ch
 
     def peek_char(self) -> str:
         if self.is_eof():
             return "\0"
+
         return self.source_code[self.pos]
 
     def is_eof(self) -> bool:
